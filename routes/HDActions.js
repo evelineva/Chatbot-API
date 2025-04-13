@@ -1,22 +1,33 @@
 const express = require("express");
 const router = express.Router();
+const verifyToken = require("../middleware/verifyToken");
 const HdAction = require("../models/HDAction");
-const adminOnly = require("../middleware/adminOnly");
+const User = require("../models/User");
 
-// GET all
-router.get("/", adminOnly, async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   try {
-    const data = await HdAction.find().sort({ createdAt: -1 });
+    const userId = req.userId; 
+    const data = await HdAction.find({ userId }).sort({ createdAt: -1 }); 
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: "Gagal ambil data" });
   }
 });
 
-// POST create
-router.post("/", adminOnly, async (req, res) => {
+router.post("/", verifyToken, async (req, res) => {
   try {
-    const newRequest = new HdAction(req.body);
+    const { npk } = req.body;
+
+    const user = await User.findOne({ npk });
+    if (!user) {
+      return res.status(400).json({ error: `NPK ${npk} tidak ditemukan di data user` });
+    }
+
+    const newRequest = new HdAction({
+      ...req.body,
+      userId: req.userId, 
+    });
+
     const saved = await newRequest.save();
     res.json(saved);
   } catch (err) {
@@ -24,9 +35,19 @@ router.post("/", adminOnly, async (req, res) => {
   }
 });
 
-// PUT update
-router.put("/:id", adminOnly, async (req, res) => {
+router.put("/:id", verifyToken, async (req, res) => {
   try {
+    const userId = req.userId;
+    const hdAction = await HdAction.findById(req.params.id);
+
+    if (!hdAction) {
+      return res.status(404).json({ error: "Data tidak ditemukan" });
+    }
+
+    if (hdAction.userId.toString() !== userId) {
+      return res.status(403).json({ error: "Anda tidak memiliki izin untuk mengupdate data ini" });
+    }
+
     const updated = await HdAction.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updated);
   } catch (err) {
@@ -34,9 +55,19 @@ router.put("/:id", adminOnly, async (req, res) => {
   }
 });
 
-// DELETE
-router.delete("/:id", adminOnly, async (req, res) => {
+router.delete("/:id", verifyToken, async (req, res) => {
   try {
+    const userId = req.userId;
+    const hdAction = await HdAction.findById(req.params.id);
+
+    if (!hdAction) {
+      return res.status(404).json({ error: "Data tidak ditemukan" });
+    }
+
+    if (hdAction.userId.toString() !== userId) {
+      return res.status(403).json({ error: "Anda tidak memiliki izin untuk menghapus data ini" });
+    }
+
     await HdAction.findByIdAndDelete(req.params.id);
     res.json({ message: "Berhasil dihapus" });
   } catch (err) {
