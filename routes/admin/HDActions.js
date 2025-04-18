@@ -8,9 +8,22 @@ const User = require("../../models/User");
 // GET all
 router.get("/", adminOnly, async (req, res) => {
   try {
-    const data = await HdAction.find().sort({ createdAt: -1 });
-    res.json(data);
+    const hdActions = await HdAction.find().sort({ createdAt: -1 }).lean();
+    const users = await User.find().lean();
+
+    const userMap = users.reduce((map, user) => {
+      map[user.npk] = user.role || "unknown";
+      return map;
+    }, {});
+
+    const enriched = hdActions.map((action) => ({
+      ...action,
+      role: userMap[action.npk] || "unknown",
+    }));
+
+    res.json(enriched);
   } catch (err) {
+    console.error("Error fetching HDAction:", err);
     res.status(500).json({ error: "Gagal ambil data" });
   }
 });

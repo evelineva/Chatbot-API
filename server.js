@@ -9,10 +9,12 @@ const adminRoutes = require("./routes/admin/user");
 const hdActionAdminRoutes = require("./routes/admin/HDActions");
 const hdActionRoutes = require("./routes/HDActions");
 const chatRoutes = require("./routes/chat");
+const sendEmailRouter = require('./routes/admin/sendEmail');
 const mongoose = require("mongoose");
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
+const sendEmail = require("./utils/sendEmail");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,7 +28,8 @@ app.use("/api/master/users", masterRoutes);
 app.use("/api/admin/users", adminRoutes);
 app.use("/api/admin/hd-actions", hdActionAdminRoutes);
 app.use("/api/hd-actions", hdActionRoutes);
-app.use('/api/chat', chatRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/send-email", sendEmailRouter);
 
 // Swagger docs
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

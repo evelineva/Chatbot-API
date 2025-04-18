@@ -80,4 +80,35 @@ router.delete("/:id", adminOnly, async (req, res) => {
     res.json({ message: "User berhasil dihapus." });
 });
 
+router.get("/summary", adminOnly, async (req, res) => {
+    try {
+      const summary = await User.aggregate([
+        {
+          $group: {
+            _id: "$role",
+            count: { $sum: 1 }
+          }
+        },
+        {
+          $project: {
+            role: "$_id",
+            count: 1,
+            _id: 0
+          }
+        }
+      ]);
+
+      const roleOrder = ["master", "admin", "user"];
+      const result = roleOrder.map((role) => ({
+        role,
+        count: summary.find((s) => s.role === role)?.count || 0,
+      }));
+  
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: "Gagal ambil summary user" });
+    }
+  });
+  
+
 module.exports = router;
