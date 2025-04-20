@@ -10,6 +10,7 @@ const hdActionAdminRoutes = require("./routes/admin/HDActions");
 const hdActionRoutes = require("./routes/HDActions");
 const chatRoutes = require("./routes/chat");
 const sendEmailRouter = require('./routes/admin/sendEmail');
+const botHistoryRouter = require('./routes/admin/botHistory');
 const mongoose = require("mongoose");
 
 const swaggerUi = require("swagger-ui-express");
@@ -30,6 +31,7 @@ app.use("/api/admin/hd-actions", hdActionAdminRoutes);
 app.use("/api/hd-actions", hdActionRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/send-email", sendEmailRouter);
+app.use("/api/chat", botHistoryRouter);
 
 // Swagger docs
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

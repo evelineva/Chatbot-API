@@ -1,8 +1,12 @@
 const express = require("express");
 const axios = require("axios");
-const ChatSession = require("../models/ChatSession"); // Jangan lupa ini ya
+const ChatSession = require("../models/ChatSession");
+const authMiddleware = require("../middleware/auth"); 
+
 
 const router = express.Router();
+
+router.use(authMiddleware);
 
 /**
  * @swagger
@@ -39,7 +43,7 @@ const router = express.Router();
 router.post('/', async (req, res) => {
     try {
       const { message, sender_id } = req.body;
-      console.log('Data yang dikirim:', message, sender_id); // Pastikan datanya benar
+      console.log('Data yang dikirim:', message, sender_id);
   
       const response = await axios.post('http://localhost:8000/chat', {
         message,
@@ -57,11 +61,11 @@ router.post('/', async (req, res) => {
 router.post("/session", async (req, res) => {
     const { sender_id } = req.body;
     const chat_id = `${sender_id}-${Date.now()}`;
-    const name = "New Session"; // <- Tambahin default nama
+    const name = "New Session"; 
   
     try {
       await ChatSession.create({ sender_id, chat_id, name });
-      res.json({ chat_id, name }); // balikin juga name kalau mau
+      res.json({ chat_id, name });
     } catch (err) {
       res.status(500).json({ message: "Gagal buat sesi" });
     }
@@ -72,9 +76,10 @@ router.post("/session", async (req, res) => {
   router.post("/session/:chat_id/message", async (req, res) => {
     const { chat_id } = req.params;
     const { text, isUser } = req.body;
+    const sender_id = req.user.npk;
   
     try {
-      const session = await ChatSession.findOne({ chat_id });
+      const session = await ChatSession.findOne({ chat_id, sender_id });
   
       if (!session) return res.status(404).json({ message: "Sesi tidak ditemukan" });
   
@@ -87,21 +92,20 @@ router.post("/session", async (req, res) => {
       res.status(500).json({ message: "Gagal simpan message" });
     }
   });
+  
 
   // Mengambil semua pesan dari sesi berdasarkan chat_id
-router.get("/session/:chat_id/messages", async (req, res) => {
+  router.get("/session/:chat_id/messages", async (req, res) => {
     const { chat_id } = req.params;
+    const sender_id = req.user.npk;
   
     try {
-      const session = await ChatSession.findOne({ chat_id });
+      const session = await ChatSession.findOne({ chat_id, sender_id });
   
-      if (!session) {
-        return res.status(404).json({ message: "Sesi tidak ditemukan" });
-      }
+      if (!session) return res.status(404).json({ message: "Sesi tidak ditemukan" });
   
       res.json({ messages: session.messages });
     } catch (err) {
-      console.error("Error mengambil messages:", err);
       res.status(500).json({ message: "Gagal memuat messages" });
     }
   });
@@ -109,36 +113,36 @@ router.get("/session/:chat_id/messages", async (req, res) => {
   
   // Mendapatkan sesi chat
   router.get("/sessions", async (req, res) => {
+    const sender_id = req.user.npk;
+  
     try {
-      const sessions = await ChatSession.find();
+      const sessions = await ChatSession.find({ sender_id });
       res.json({ sessions });
     } catch (err) {
       res.status(500).json({ message: "Gagal memuat sesi" });
     }
   });
+  
 
   // Mengubah nama sesi
-router.patch("/session/:chat_id", async (req, res) => {
+  router.patch("/session/:chat_id", async (req, res) => {
     const { chat_id } = req.params;
     const { name } = req.body;
+    const sender_id = req.user.npk;
   
     try {
       const session = await ChatSession.findOneAndUpdate(
-        { chat_id },
+        { chat_id, sender_id },
         { name },
         { new: true }
       );
   
-      if (!session) {
-        return res.status(404).json({ message: "Sesi tidak ditemukan" });
-      }
+      if (!session) return res.status(404).json({ message: "Sesi tidak ditemukan" });
   
       res.json({ message: "Nama sesi berhasil diubah", session });
     } catch (err) {
-      console.error("Error mengubah nama sesi:", err);
       res.status(500).json({ message: "Gagal mengubah nama sesi" });
     }
   });
-  
   
 module.exports = router;
