@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const hdActionSchema = new mongoose.Schema({
+  _id: { type: String },
   npk: { type:String, required: true },
   email: { type:String, required: true },
   request: { type: String, required: true },

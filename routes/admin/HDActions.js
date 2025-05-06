@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const HdAction = require("../../models/HDAction");
 const adminOnly = require("../../middleware/adminOnly");
+const generateCustomId = require("../../utils/generateCustomId");
 
 const User = require("../../models/User");
 
@@ -37,8 +38,13 @@ router.post("/", adminOnly, async (req, res) => {
     if (!user) {
       return res.status(400).json({ error: `NPK ${npk} tidak ditemukan di data user` });
     }
+    const customId = await generateCustomId(npk);
 
-    const newRequest = new HdAction(req.body);
+    const newRequest = new HdAction({
+      _id: customId,
+      ...req.body,
+    });
+    
     const saved = await newRequest.save();
     res.json(saved);
   } catch (err) {

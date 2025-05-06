@@ -3,6 +3,7 @@ const router = express.Router();
 const verifyToken = require("../middleware/verifyToken");
 const HdAction = require("../models/HDAction");
 const User = require("../models/User");
+const generateCustomId = require("../utils/generateCustomId");
 
 router.get("/", verifyToken, async (req, res) => {
   try {
@@ -23,9 +24,12 @@ router.post("/", verifyToken, async (req, res) => {
       return res.status(400).json({ error: `NPK ${npk} tidak ditemukan di data user` });
     }
 
+    const customId = await generateCustomId(npk);
+
     const newRequest = new HdAction({
+      _id: customId,
       ...req.body,
-      userId: req.userId, 
+      userId: req.userId,
     });
 
     const saved = await newRequest.save();
