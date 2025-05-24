@@ -7,7 +7,7 @@ const generateCustomId = require("../utils/generateCustomId");
 
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const { npk } = req.body;
+    const npk = req.user.npk; 
     const data = await HdAction.find({ npk }).sort({ createdAt: -1 }); 
     res.json(data);
   } catch (err) {
