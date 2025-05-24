@@ -10,7 +10,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:5000",
+        url: "chatbot-api-production-3932.up.railway.app",
       },
     ],
     components: {
