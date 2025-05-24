@@ -130,7 +130,7 @@ router.post("/login", loginValidator, async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id, role: user.role, npk: user.npk },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
