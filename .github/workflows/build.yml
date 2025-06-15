@@ -1,0 +1,33 @@
+name: Build and Upload Node.js API Artifact
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.13.0'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create artifact directory
+        run: |
+          mkdir artifact
+          cp -r package*.json server.js swagger.js routes controllers utils .env.example models middleware config artifact/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: node-api-artifact
+          path: artifact

@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
       const { message, sender_id } = req.body;
       console.log('Data yang dikirim:', message, sender_id);
   
-      const response = await axios.post('https://chatbot-fastapi-production.up.railway.app/chat', {
+      const response = await axios.post('http://localhost:8000/chat', {
         message,
         sender_id,
       });
