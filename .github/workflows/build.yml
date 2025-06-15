@@ -24,7 +24,7 @@ jobs:
       - name: Create artifact directory
         run: |
           mkdir artifact
-          cp -r package*.json server.js swagger.js routes controllers utils .env.example models middleware config artifact/
+          cp -r package*.json server.js swagger.js routes controllers utils .env models middleware config artifact/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
