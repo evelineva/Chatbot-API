@@ -27,7 +27,7 @@ jobs:
           cp -r package*.json server.js swagger.js routes controllers utils .env.example models middleware config artifact/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: node-api-artifact
           path: artifact
